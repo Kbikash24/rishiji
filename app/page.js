@@ -1,319 +1,661 @@
-'use client';
-
-
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { 
+"use client";
+import { useCallback, useRef, useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
   Search,
-  Flower2 as Lotus,
-  Circle
-} from 'lucide-react';
-import FlowerBG from './FlowerBG';
-import MeditatingFigureBG from './MeditatingFigureBG';
+  Flower,
+  Circle,
+  MessageCircle,
+  Sparkles,
+  Clock,
+} from "lucide-react";
+import axios from "axios";
+import sanitizeHtml from "sanitize-html";
 
-export default function AskRishiji() {
-  const [searchText, setSearchText] = useState('');
+// Enhanced Loader Component
+const MotionLoader = () => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="flex flex-col items-center justify-center py-16 px-4"
+  >
+    <div className="relative w-20 h-20 mb-6">
+      {[...Array(3)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute inset-0 border-4 border-amber-300 rounded-full"
+          animate={{
+            scale: [1, 2, 2, 1, 1],
+            rotate: [0, 0, 180, 180, 0],
+            opacity: [1, 0.6, 0.4, 0.2, 1],
+          }}
+          transition={{
+            duration: 3,
+            ease: "easeInOut",
+            times: [0, 0.2, 0.5, 0.8, 1],
+            repeat: Infinity,
+            delay: i * 0.5,
+          }}
+        />
+      ))}
+      <motion.div
+        className="absolute inset-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+      >
+        <Flower className="text-white" size={24} />
+      </motion.div>
+    </div>
+    <motion.div
+      initial={{ y: 10, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ delay: 0.5 }}
+      className="text-center"
+    >
+      <h3 className="text-xl font-semibold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent mb-2">
+        Seeking wisdom from Rishiji...
+      </h3>
+      <p className="text-slate-500">
+        Please wait while I find the perfect guidance for you.
+      </p>
+    </motion.div>
+  </motion.div>
+);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (!searchText.trim()) return;
-    
-    // Handle search functionality here
-    console.log('Searching for:', searchText);
+// Typing Animation Component
+const TypingText = ({ text, className = "" }) => {
+  const [displayedText, setDisplayedText] = useState("");
+
+  useEffect(() => {
+    if (!text) return;
+
+    let index = 0;
+    const timer = setInterval(() => {
+      if (index < text.length) {
+        setDisplayedText(text.slice(0, index + 1));
+        index++;
+      } else {
+        clearInterval(timer);
+      }
+    }, 30);
+
+    return () => clearInterval(timer);
+  }, [text]);
+
+  return <div className={className}>{displayedText}</div>;
+};
+
+// Background Components (simplified)
+const FlowerBG = ({ className }) => (
+  <div className={className}>
+    {[...Array(6)].map((_, i) => (
+      <motion.div
+        key={i}
+        className="absolute"
+        style={{
+          left: `${(i * 15) % 80}%`,
+          top: `${(i * 23) % 70}%`,
+        }}
+        animate={{
+          rotate: [0, 360],
+          scale: [0.8, 1.2, 0.8],
+          opacity: [0.1, 0.3, 0.1],
+        }}
+        transition={{
+          duration: 20 + i * 3,
+          repeat: Infinity,
+          ease: "linear",
+        }}
+      >
+        <Flower className="text-amber-400" size={32 + i * 4} />
+      </motion.div>
+    ))}
+  </div>
+);
+
+const MeditatingFigureBG = ({ className }) => (
+  <motion.div
+    className={className}
+    animate={{
+      y: [0, -10, 0],
+      scale: [1, 1.05, 1],
+    }}
+    transition={{
+      duration: 4,
+      repeat: Infinity,
+      ease: "easeInOut",
+    }}
+  >
+    <div className="w-full h-full bg-gradient-to-t from-amber-200/30 to-orange-200/20 rounded-full blur-2xl" />
+  </motion.div>
+);
+
+export default function ImprovedAskRishiji() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState(null);
+  const [error, setError] = useState(null);
+  const [showResults, setShowResults] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const debounceRef = useRef(null);
+  const abortRef = useRef(null);
+
+  // Extract HTML from markdown code fence
+  const extractHtmlFromResult = (result) => {
+    if (!result) return null;
+
+    // Check if result contains HTML wrapped in markdown code fence
+    if (result.startsWith("```html\n") || result.startsWith("`html\n")) {
+      return result
+        .replace(/^`{1,3}html\n/, "")
+        .replace(/\n`{1,3}$/, "")
+        .trim();
+    }
+
+    // Check if it's already HTML
+    if (result.includes("<!DOCTYPE html>") || result.includes("<html")) {
+      return result;
+    }
+
+    return null;
+  };
+
+  // Fetch suggestions with debouncing
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (!q) {
+      setSuggestions([]);
+      return;
+    }
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        if (abortRef.current) abortRef.current.abort();
+        abortRef.current = new AbortController();
+
+        const res = await axios.post(
+          "https://vhub-search-191432963656.asia-south2.run.app/vedasis/public/search_suggestions",
+          {
+            creator_id: "rishinityapragya",
+            html_response: true,
+            search_query: q,
+          },
+          {
+            headers: { "Content-Type": "application/json" },
+            signal: abortRef.current.signal,
+          }
+        );
+
+        const suggestionList = res.data.suggestions || [];
+        setSuggestions(suggestionList.slice(0, 6));
+      } catch (err) {
+        if (err.name !== "CanceledError" && err.name !== "AbortError") {
+          console.debug("Suggestions error:", err.message);
+        }
+      }
+    }, 400);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (abortRef.current) abortRef.current.abort();
+    };
+  }, [searchQuery]);
+
+  // Handle search/ask functionality
+  const handleAsk = useCallback(async (question) => {
+    if (!question.trim()) return;
+
+    setLoading(true);
+    setShowResults(false);
+    setError(null);
+    setResponse(null);
+
+    try {
+      const res = await axios.post(
+        "https://vhub-search-191432963656.asia-south2.run.app/vedasis/public/ai_search",
+        {
+          creator_id: "rishinityapragya",
+          html_response: true,
+          search_query: question,
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+          timeout: 30000, // 30 second timeout
+        }
+      );
+
+      console.log("API Response:", res.data);
+      setResponse(res.data);
+      setShowResults(true);
+    } catch (error) {
+      console.error("API Error:", error);
+      setError(
+        "Sorry, something went wrong while fetching the answer. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const handleSearchSubmit = () => {
+    if (searchQuery.trim()) {
+      handleAsk(searchQuery);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleSearchSubmit();
+    }
+  };
+
+  const quickQuestions = [
+    "Please share recipe for fruity ice cream",
+    "Please share recipe for makhana protein power snack",
+    "Please share recipe for healthy veggie soup",
+    "Please share recipe for ragi cookies crunch",
+    "Please share some everyday tiffin recipes for kids",
+    "What are some healthy snack hacks and positive parenting tips",
+  ];
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.2 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: "spring", stiffness: 100 },
+    },
   };
 
   return (
-  <div className="min-h-screen bg-gradient-to-br from-amber-50 via-yellow-50 to-yellow-100 relative overflow-hidden">
-  {/* Animated SVG Flower Background */}
-  <FlowerBG className="fixed inset-0 w-full h-full z-0" />
-  {/* Animated SVG Meditating Figure */}
-  <MeditatingFigureBG className="fixed left-1/2 top-3/4 w-[180px] h-[180px] z-0" />
-      {/* Navbar */}
-      <nav className="fixed top-0 left-0 w-full z-30 bg-white/80 backdrop-blur-lg border-b border-yellow-200/40 shadow-sm">
-        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Lotus className="text-yellow-400" size={28} />
-            <span className="text-xl font-semibold text-yellow-700 tracking-wide">Ask Rishiji</span>
-          </div>
-          <div className="flex gap-6 text-gray-700 font-medium text-base">
-            <a href="#" className="hover:text-yellow-400 transition-colors">Home</a>
-            <a href="#about" className="hover:text-yellow-600 transition-colors">About</a>
-            <a href="#wisdom" className="hover:text-yellow-600 transition-colors">Wisdom</a>
-            <a href="#contact" className="hover:text-yellow-600 transition-colors">Contact</a>
-          </div>
-        </div>
-      </nav>
-      <div className="h-16" /> {/* Spacer for navbar */}
-      {/* Elegant Background Pattern */}
-  <div className="absolute inset-0 overflow-hidden z-10">
-        {/* More Visible gradient orbs */}
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 relative overflow-hidden">
+      {/* Enhanced Background */}
+      <FlowerBG className="fixed inset-0 w-full h-full z-0" />
+      <MeditatingFigureBG className="fixed left-1/2 top-3/4 w-48 h-48 z-0 -translate-x-1/2" />
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden z-10">
         <motion.div
           animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.15, 0.25, 0.15],
-            x: [0, 50, 0],
-            y: [0, -30, 0],
+            scale: [1, 1.3, 1],
+            opacity: [0.1, 0.2, 0.1],
           }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-orange-400 to-amber-400 rounded-full blur-3xl"
+          transition={{ duration: 8, repeat: Infinity }}
+          className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-orange-300 to-amber-300 rounded-full blur-3xl"
         />
         <motion.div
           animate={{
             scale: [1.2, 1, 1.2],
-            opacity: [0.15, 0.3, 0.15],
-            x: [0, -50, 0],
-            y: [0, 30, 0],
+            opacity: [0.1, 0.25, 0.1],
           }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-yellow-400 to-orange-400 rounded-full blur-3xl"
+          transition={{ duration: 10, repeat: Infinity }}
+          className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-yellow-300 to-orange-300 rounded-full blur-3xl"
         />
-        
-        {/* More visible geometric spiritual patterns */}
-        {[...Array(8)].map((_, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0 }}
-            animate={{
-              opacity: [0.2, 0.5, 0.2],
-              rotate: [0, 360],
-              scale: [0.8, 1.3, 0.8],
-            }}
-            transition={{
-              duration: 15 + i * 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: i * 0.3
-            }}
-            className={`absolute ${
-              i % 4 === 0 ? 'top-20 left-20' :
-              i % 4 === 1 ? 'top-40 right-20' : 
-              i % 4 === 2 ? 'bottom-40 left-1/4' : 'bottom-20 right-1/4'
-            }`}
-          >
-            <Circle className="text-amber-400/40" size={i % 3 === 0 ? 40 : 32} strokeWidth={1.5} />
-          </motion.div>
-        ))}
-
-        {/* Large Moving Flower Pattern - Much More Visible */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{
-            opacity: [0.2, 0.4, 0.2],
-            scale: [0.7, 1.3, 0.7],
-            rotate: [0, 360],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-          className="absolute inset-0 flex items-center justify-center pointer-events-none"
-        >
-          {/* Large Central Mandala Pattern */}
-          <div className="relative">
-            {/* Outer flower petals - More Visible */}
-            {[...Array(8)].map((_, i) => (
-              <motion.div
-                key={`petal-${i}`}
-                initial={{ rotate: i * 45 }}
-                animate={{
-                  rotate: [i * 45, i * 45 + 360],
-                  scale: [0.8, 1.4, 0.8],
-                  opacity: [0.4, 0.7, 0.4],
-                }}
-                transition={{
-                  duration: 18,
-                  repeat: Infinity,
-                  ease: "linear",
-                  delay: i * 0.3
-                }}
-                className="absolute"
-                style={{
-                  transformOrigin: '0 200px',
-                  left: '50%',
-                  top: '50%',
-                }}
-              >
-                <Lotus className="text-amber-500/50" size={48} strokeWidth={1.5} />
-              </motion.div>
-            ))}
-            
-            {/* Inner flower ring - More Visible */}
-            {[...Array(6)].map((_, i) => (
-              <motion.div
-                key={`inner-petal-${i}`}
-                initial={{ rotate: i * 60 }}
-                animate={{
-                  rotate: [i * 60, i * 60 - 360],
-                  scale: [0.9, 1.5, 0.9],
-                  opacity: [0.5, 0.8, 0.5]
-                }}
-                transition={{
-                  duration: 12,
-                  repeat: Infinity,
-                  ease: "linear",
-                  delay: i * 0.2
-                }}
-                className="absolute"
-                style={{
-                  transformOrigin: '0 120px',
-                  left: '50%',
-                  top: '50%',
-                }}
-              >
-                <Lotus className="text-orange-500/60" size={40} strokeWidth={1.5} />
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Floating lotus elements - More Visible */}
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={`lotus-${i}`}
-            initial={{ opacity: 0, y: 50 }}
-            animate={{
-              opacity: [0.3, 0.6, 0.3],
-              y: [0, -60, 0],
-              x: [0, Math.sin(i * 2) * 30, 0],
-              rotate: [0, 25, 0],
-              scale: [0.8, 1.3, 0.8],
-            }}
-            transition={{
-              duration: 6 + i * 1.5,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: i * 1
-            }}
-            className={`absolute ${
-              i % 6 === 0 ? 'top-20 right-20' : 
-              i % 6 === 1 ? 'bottom-20 left-20' : 
-              i % 6 === 2 ? 'top-1/2 left-10' :
-              i % 6 === 3 ? 'top-1/2 right-10' :
-              i % 6 === 4 ? 'top-10 left-1/2' : 'bottom-10 right-1/3'
-            }`}
-          >
-            <Lotus 
-              className="text-amber-500/50" 
-              size={i % 3 === 0 ? 44 : i % 3 === 1 ? 36 : 28} 
-              strokeWidth={1.5} 
-            />
-          </motion.div>
-        ))}
-
-        {/* Scattered Small Flowers - More Visible */}
-        {[...Array(12)].map((_, i) => (
-          <motion.div
-            key={`small-flower-${i}`}
-            initial={{ 
-              opacity: 0,
-            }}
-            animate={{
-              opacity: [0.2, 0.5, 0.2],
-              y: [0, -70, 0],
-              rotate: [0, 270, 360],
-              scale: [0.7, 1.4, 0.7],
-            }}
-            transition={{
-              duration: 8 + i * 1,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: i * 0.5
-            }}
-            className="absolute pointer-events-none"
-            style={{
-              left: `${(i * 7) % 90}%`,
-              top: `${(i * 11) % 80}%`,
-            }}
-          >
-            <Lotus 
-              className="text-yellow-500/40" 
-              size={20 + (i % 3) * 6} 
-              strokeWidth={1} 
-            />
-          </motion.div>
-        ))}
       </div>
-
+      {/* Enhanced Navbar */}
+      <nav className="fixed top-0 left-0 w-full z-30 bg-white/90 backdrop-blur-xl border-b border-amber-200/50 shadow-lg">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
+              <Flower className="text-white" size={20} />
+            </div>
+            <span className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+              Ask Rishiji
+            </span>
+          </div>
+          <div className="flex gap-8 text-gray-700 font-medium">
+            <a href="#" className="hover:text-amber-600 transition-colors">
+              Home
+            </a>
+            <a href="#about" className="hover:text-amber-600 transition-colors">
+              About
+            </a>
+            <a
+              href="#wisdom"
+              className="hover:text-amber-600 transition-colors"
+            >
+              Wisdom
+            </a>
+            <a
+              href="#contact"
+              className="hover:text-amber-600 transition-colors"
+            >
+              Contact
+            </a>
+          </div>
+        </div>
+      </nav>
+      <div className="h-20" /> {/* Navbar spacer */}
       {/* Main Content */}
-      <div className="relative z-10 flex items-center justify-center min-h-screen px-6">
-        <div className="text-center max-w-2xl mx-auto">
-          {/* Logo and Title */}
-          <motion.div 
+      <div className="relative z-20 flex items-center justify-center min-h-screen px-6">
+        <div className="text-center max-w-4xl mx-auto">
+          {/* Enhanced Logo and Title */}
+          <motion.div
             className="mb-12"
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.8, type: "spring", stiffness: 200 }}
+            transition={{ duration: 1, type: "spring", stiffness: 150 }}
           >
             <motion.div
-              animate={{ 
-                rotate: [0, 5, 0, -5, 0],
-              }}
-              transition={{ 
-                duration: 4, 
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-              className="relative mb-6 flex justify-center"
+              animate={{ rotate: [0, 5, 0, -5, 0] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              className="relative mb-8 flex justify-center"
             >
-              <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-2xl">
-                <Lotus className="text-white" size={36} />
+              <div className="w-24 h-24 bg-gradient-to-br from-amber-400 via-orange-400 to-red-400 rounded-full flex items-center justify-center shadow-2xl">
+                <Flower className="text-white" size={40} />
               </div>
               <motion.div
-                animate={{ 
-                  scale: [1, 1.2, 1],
-                  opacity: [0.5, 0.8, 0.5]
-                }}
-                transition={{ 
-                  duration: 2, 
-                  repeat: Infinity 
-                }}
-                className="absolute -inset-4 bg-gradient-to-br from-amber-400/20 to-orange-500/20 rounded-full blur-xl"
+                animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
+                transition={{ duration: 3, repeat: Infinity }}
+                className="absolute -inset-6 bg-gradient-to-br from-amber-400/20 to-orange-400/20 rounded-full blur-xl"
               />
             </motion.div>
-            
-            <motion.h1 
+
+            <motion.h1
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-5xl md:text-6xl font-light text-gray-800 mb-4"
+              transition={{ duration: 1, delay: 0.3 }}
+              className="text-6xl md:text-7xl font-light text-gray-800 mb-6"
             >
-              Ask <span className="bg-gradient-to-r from-yellow-400 to-yellow-400 bg-clip-text text-transparent font-medium">Rishiji</span>
+              Ask{" "}
+              <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent font-semibold">
+                Rishiji
+              </span>
             </motion.h1>
+
+            <motion.p
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 1, delay: 0.5 }}
+              className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed"
+            >
+              Get personalized spiritual guidance, healthy recipes, and
+              parenting wisdom from Rishiji's extensive knowledge and
+              experience.
+            </motion.p>
           </motion.div>
 
-          {/* Search Box */}
+          {/* Enhanced Search Box */}
           <motion.div
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
+            transition={{ duration: 1, delay: 0.7 }}
+            className="mb-8"
           >
-            <form onSubmit={handleSearch}>
-              <div className="relative max-w-full mx-auto">
-                <div className="flex items-center bg-white/90 backdrop-blur-xl border border-amber-200/50 rounded-full shadow-2xl shadow-amber-500/10 overflow-hidden">
-                  <div className="pl-6 pr-4">
-                    <Search className="text-yellow-400" size={24} />
-                  </div>
-                  
-                  <input
-                    type="text"
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                    placeholder="Ask your spiritual question..."
-                    className="flex-1 min-w-[320px] md:min-w-[480px] lg:min-w-[700px] py-5 pr-6 bg-transparent text-gray-800 placeholder-gray-500 focus:outline-none text-lg"
-                  />
+            <div className="relative max-w-4xl mx-auto">
+              <div className="flex items-center bg-white/95 backdrop-blur-xl border-2 border-amber-200/60 rounded-2xl shadow-2xl shadow-amber-500/20 overflow-hidden hover:shadow-3xl transition-all duration-300">
+                <div className="pl-8 pr-4">
+                  <Search className="text-amber-500" size={28} />
                 </div>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Ask your question about parenting, recipes, or spiritual guidance..."
+                  className="flex-1 min-w-0 py-6 pr-8 bg-transparent text-gray-800 placeholder-gray-500 focus:outline-none text-lg"
+                />
+                <button
+                  onClick={handleSearchSubmit}
+                  disabled={loading || !searchQuery.trim()}
+                  className="mr-4 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-semibold hover:from-amber-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+                >
+                  {loading ? "Asking..." : "Ask"}
+                </button>
               </div>
-            </form>
+            </div>
+
+            {/* Quick Questions */}
+            {!loading && !showResults && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.9 }}
+                className="mt-8"
+              >
+                <p className="text-gray-600 mb-4 text-lg">Try asking about:</p>
+                <div className="flex flex-wrap gap-3 justify-center max-w-4xl mx-auto">
+                  {quickQuestions.map((question, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        setSearchQuery(question);
+                        handleAsk(question);
+                      }}
+                      className="px-5 py-3 bg-white/80 border border-amber-200 rounded-full text-sm text-gray-700 hover:shadow-lg hover:bg-white hover:border-amber-300 transition-all duration-300 hover:-translate-y-0.5 cursor-pointer"
+                    >
+                      {question}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
           </motion.div>
+
+          {/* Results Section */}
+          <AnimatePresence mode="wait">
+            {loading && <MotionLoader key="loader" />}
+
+            {showResults && response && (
+              <motion.div
+                key="results"
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -40 }}
+                transition={{ duration: 0.6 }}
+                className="max-w-5xl mx-auto"
+              >
+                {/* Response Card */}
+                <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-amber-200/50 mb-8">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                      <MessageCircle className="text-white" size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-800">
+                        Answer from Rishiji
+                      </h3>
+                      {response.timestamp && (
+                        <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                          <Clock size={14} />
+                          <span>
+                            {new Date(response.timestamp).toLocaleString()}
+                          </span>
+                          {response.is_cached && (
+                            <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
+                              Cached ({response.cache_age_days} days old)
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* HTML Content */}
+                  {(() => {
+                    const htmlContent = extractHtmlFromResult(
+                      response.result.replace(/\[EMOJI\]/g, "🙏")
+                    );
+                    if (htmlContent) {
+                      return (
+                        <div
+                          className="prose prose-lg max-w-none text-gray-700"
+                          dangerouslySetInnerHTML={{
+                            __html: sanitizeHtml(htmlContent, {
+                              allowedTags:
+                                sanitizeHtml.defaults.allowedTags.concat([
+                                  "img",
+                                  "h1",
+                                  "h2",
+                                  "h3",
+                                  "h4",
+                                  "h5",
+                                  "h6",
+                                  "div",
+                                  "section",
+                                  "style",
+                                  "iframe",
+                                  "blockquote",
+                                ]),
+                              allowedAttributes: {
+                                ...sanitizeHtml.defaults.allowedAttributes,
+                                "*": ["class", "id", "style"],
+                                img: ["src", "alt", "width", "height"],
+                                a: ["href", "target", "rel"],
+                                iframe: [
+                                  "src",
+                                  "width",
+                                  "height",
+                                  "frameborder",
+                                  "allowfullscreen",
+                                ],
+                              },
+                              allowedStyles: {
+                                "*": {
+                                  "font-family": [/.*/],
+                                  "line-height": [/.*/],
+                                  margin: [/.*/],
+                                  background: [/.*/],
+                                  color: [/.*/],
+                                  "font-weight": [/.*/],
+                                  "font-size": [/.*/],
+                                  "max-width": [/.*/],
+                                  padding: [/.*/],
+                                  border: [/.*/],
+                                  "border-radius": [/.*/],
+                                  "box-shadow": [/.*/],
+                                  "text-align": [/.*/],
+                                },
+                              },
+                            }),
+                          }}
+                        />
+                      );
+                    } else {
+                      return (
+                        <div className="prose prose-lg max-w-none text-gray-700">
+                          <TypingText
+                            text={
+                              response.result.replace(/\[EMOJI\]/g, "🙏") ||
+                              "No response received."
+                            }
+                          />
+                        </div>
+                      );
+                    }
+                  })()}
+
+                  {/* Response Metadata */}
+                  <div className="mt-6 pt-4 border-t border-gray-200 flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center gap-4">
+                      <span>Access Count: {response.access_count}</span>
+                      <span>Creator: {response.creator_id}</span>
+                    </div>
+                    {suggestions.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Sparkles size={16} />
+                        <span>Related suggestions available</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Suggestions */}
+                {suggestions.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-amber-200/50"
+                  >
+                    <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                      <Sparkles className="text-amber-500" size={20} />
+                      You might also be interested in:
+                    </h4>
+                    <div className="flex flex-wrap gap-3">
+                      {suggestions.map((suggestion, index) => (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            setSearchQuery(suggestion);
+                            handleAsk(suggestion);
+                          }}
+                          className="px-4 py-2 bg-amber-50 border border-amber-200 rounded-full text-sm text-amber-800 hover:bg-amber-100 hover:border-amber-300 transition-all duration-300 cursor-pointer"
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </motion.div>
+            )}
+
+            {/* Welcome State */}
+            {!loading && !showResults && (
+              <motion.div
+                key="welcome"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="max-w-3xl mx-auto"
+              >
+                <motion.div
+                  variants={itemVariants}
+                  className="text-center bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-amber-200/50"
+                >
+                  <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <MessageCircle className="text-white" size={32} />
+                  </div>
+                  <h2 className="text-3xl font-bold text-gray-800 mb-4">
+                    Welcome to Rishiji's Wisdom Hub
+                  </h2>
+                  <p className="text-gray-600 text-lg leading-relaxed mb-6">
+                    Get personalized answers about parenting, child nutrition,
+                    healthy recipes, spiritual guidance, and family wellness.
+                    Simply ask your question above and receive thoughtful,
+                    expert guidance from Rishiji's vast knowledge.
+                  </p>
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
+                    <p className="text-blue-800 font-medium">
+                      💡 Try asking: "What are some healthy breakfast ideas for
+                      toddlers?" or "How can I make meditation more appealing to
+                      children?"
+                    </p>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Error State */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="max-w-2xl mx-auto mt-8 p-6 bg-red-50 border-2 border-red-200 rounded-2xl text-red-700 text-center"
+            >
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MessageCircle className="text-red-500" size={24} />
+              </div>
+              <p className="text-lg mb-4">{error}</p>
+              <button
+                onClick={() => setError(null)}
+                className="px-6 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl font-medium transition-colors"
+              >
+                Dismiss
+              </button>
+            </motion.div>
+          )}
         </div>
       </div>
     </div>
