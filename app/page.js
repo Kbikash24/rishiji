@@ -252,12 +252,11 @@ export default function ImprovedAskRishiji() {
   };
 
   const quickQuestions = [
-    "Please share recipe for fruity ice cream",
-    "Please share recipe for makhana protein power snack",
-    "Please share recipe for healthy veggie soup",
-    "Please share recipe for ragi cookies crunch",
-    "Please share some everyday tiffin recipes for kids",
-    "What are some healthy snack hacks and positive parenting tips",
+
+  "What is invoking infinity?",
+  "What is Dharma?",
+  "What are the different flavors of ego?",
+  "What are the disciplines for a Sadhak?",
   ];
 
   const containerVariants = {
