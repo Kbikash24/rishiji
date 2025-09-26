@@ -354,7 +354,7 @@ export default function ImprovedAskRishiji() {
               transition={{ duration: 1, delay: 0.5 }}
               className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed"
             >
-              Get personalized spiritual guidance from Rishiji's extensive knowledge and
+              Get personalized spiritual guidance from Rishiji&apos;s extensive knowledge and
               experience.
             </motion.p>
           </motion.div>
