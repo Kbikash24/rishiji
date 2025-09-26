@@ -86,33 +86,8 @@ const TypingText = ({ text, className = "" }) => {
   return <div className={className}>{displayedText}</div>;
 };
 
-// Background Components (simplified)
-const FlowerBG = ({ className }) => (
-  <div className={className}>
-    {[...Array(6)].map((_, i) => (
-      <motion.div
-        key={i}
-        className="absolute"
-        style={{
-          left: `${(i * 15) % 80}%`,
-          top: `${(i * 23) % 70}%`,
-        }}
-        animate={{
-          rotate: [0, 360],
-          scale: [0.8, 1.2, 0.8],
-          opacity: [0.1, 0.3, 0.1],
-        }}
-        transition={{
-          duration: 20 + i * 3,
-          repeat: Infinity,
-          ease: "linear",
-        }}
-      >
-        <Flower className="text-amber-400" size={32 + i * 4} />
-      </motion.div>
-    ))}
-  </div>
-);
+
+import FlowerBG from "./FlowerBG";
 
 const MeditatingFigureBG = ({ className }) => (
   <motion.div
@@ -280,6 +255,8 @@ export default function ImprovedAskRishiji() {
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 relative overflow-hidden">
       {/* Enhanced Background */}
       <FlowerBG className="fixed inset-0 w-full h-full z-0" />
+  {/* Additional FlowerBG for layered effect at left corner */}
+  <FlowerBG className="fixed left-0 bottom-0 w-1/2 h-1/2 z-0 opacity-40" />
       <MeditatingFigureBG className="fixed left-1/2 top-3/4 w-48 h-48 z-0 -translate-x-1/2" />
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden z-10">
@@ -349,7 +326,7 @@ export default function ImprovedAskRishiji() {
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
               className="relative mb-8 flex justify-center"
             >
-              <div className="w-24 h-24 bg-gradient-to-br from-amber-400 via-orange-400 to-red-400 rounded-full flex items-center justify-center shadow-2xl">
+              <div className="w-20 h-20 bg-gradient-to-br from-amber-400 via-orange-400 to-red-400 rounded-full flex items-center justify-center shadow-2xl">
                 <Flower className="text-white" size={40} />
               </div>
               <motion.div
@@ -363,7 +340,7 @@ export default function ImprovedAskRishiji() {
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 1, delay: 0.3 }}
-              className="text-6xl md:text-7xl font-light text-gray-800 mb-6"
+              className="text-6xl md:text-7xl text-gray-800 mb-6"
             >
               Ask{" "}
               <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent font-semibold">
@@ -375,10 +352,9 @@ export default function ImprovedAskRishiji() {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 1, delay: 0.5 }}
-              className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed"
+              className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed"
             >
-              Get personalized spiritual guidance, healthy recipes, and
-              parenting wisdom from Rishiji's extensive knowledge and
+              Get personalized spiritual guidance from Rishiji's extensive knowledge and
               experience.
             </motion.p>
           </motion.div>
@@ -400,7 +376,7 @@ export default function ImprovedAskRishiji() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Ask your question about parenting, recipes, or spiritual guidance..."
+                  placeholder="Ask your question about spiritual guidance..."
                   className="flex-1 min-w-0 py-6 pr-8 bg-transparent text-gray-800 placeholder-gray-500 focus:outline-none text-lg"
                 />
                 <button
@@ -599,41 +575,7 @@ export default function ImprovedAskRishiji() {
               </motion.div>
             )}
 
-            {/* Welcome State */}
-            {!loading && !showResults && (
-              <motion.div
-                key="welcome"
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-                className="max-w-3xl mx-auto"
-              >
-                <motion.div
-                  variants={itemVariants}
-                  className="text-center bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-amber-200/50"
-                >
-                  <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <MessageCircle className="text-white" size={32} />
-                  </div>
-                  <h2 className="text-3xl font-bold text-gray-800 mb-4">
-                    Welcome to Rishiji's Wisdom Hub
-                  </h2>
-                  <p className="text-gray-600 text-lg leading-relaxed mb-6">
-                    Get personalized answers about parenting, child nutrition,
-                    healthy recipes, spiritual guidance, and family wellness.
-                    Simply ask your question above and receive thoughtful,
-                    expert guidance from Rishiji's vast knowledge.
-                  </p>
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
-                    <p className="text-blue-800 font-medium">
-                      💡 Try asking: "What are some healthy breakfast ideas for
-                      toddlers?" or "How can I make meditation more appealing to
-                      children?"
-                    </p>
-                  </div>
-                </motion.div>
-              </motion.div>
-            )}
+          
           </AnimatePresence>
 
           {/* Error State */}
