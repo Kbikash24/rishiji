@@ -255,7 +255,7 @@ export default function BlogsPage() {
                 <div className="flex flex-col items-center justify-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mb-4"></div>
                   <span className="text-purple-800 font-medium">Receiving divine guidance...</span>
-                  <span className="text-gray-500 text-sm mt-2">Rishiji's wisdom is being channeled for your spiritual journey</span>
+                  <span className="text-gray-500 text-sm mt-2">Rishiji&#39;s wisdom is being channeled for your spiritual journey</span>
                 </div>
               </div>
             )}
@@ -604,7 +604,7 @@ export default function BlogsPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47.881-6.08 2.33l-.926-.626C6.82 14.945 9.294 14 12 14s5.18.945 7.006 2.704l-.926.627A7.975 7.975 0 0012 15"/>
                     </svg>
                     <p className="text-lg font-medium text-slate-600">No wisdom found</p>
-                    <p className="text-slate-500">Your search didn't match any sacred teachings.</p>
+                    <p className="text-slate-500">Your search didn&#39;t match any sacred teachings.</p>
                   </div>
                 </div>
               )
@@ -767,8 +767,8 @@ export default function BlogsPage() {
                 </span>
               </h3>
               
-              <p className="text-xl lg:text-2xl text-amber-100 mb-12 max-w-4xl mx-auto leading-relaxed">
-                Journey beyond words into direct experience of divine truth. Connect with Rishiji's pure consciousness for personalized spiritual guidance, 
+                <p className="text-xl lg:text-2xl text-amber-100 mb-12 max-w-4xl mx-auto leading-relaxed">
+                Journey beyond words into direct experience of divine truth. Connect with Rishiji&#39;s pure consciousness for personalized spiritual guidance, 
                 profound meditation practices, and transformative wisdom that awakens your highest potential.
               </p>
               
