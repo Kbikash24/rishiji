@@ -1,5 +1,6 @@
 "use client";
-import { useCallback, useRef, useState, useEffect } from "react";
+import { useCallback, useRef, useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -106,7 +107,8 @@ const MeditatingFigureBG = ({ className }) => (
   </motion.div>
 );
 
-export default function ImprovedAskRishiji() {
+function ImprovedAskRishiji() {
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(null);
@@ -214,6 +216,19 @@ export default function ImprovedAskRishiji() {
     }
   }, []);
 
+  // Handle automatic search from URL query parameter
+  useEffect(() => {
+    const query = searchParams.get('query');
+    if (query) {
+      const decodedQuery = decodeURIComponent(query);
+      setSearchQuery(decodedQuery);
+      // Trigger search automatically after a short delay to ensure component is fully mounted
+      setTimeout(() => {
+        handleAsk(decodedQuery);
+      }, 100);
+    }
+  }, [searchParams, handleAsk]);
+
   const handleSearchSubmit = () => {
     if (searchQuery.trim()) {
       handleAsk(searchQuery);
@@ -277,40 +292,6 @@ export default function ImprovedAskRishiji() {
           className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-yellow-300 to-orange-300 rounded-full blur-3xl"
         />
       </div>
-      {/* Enhanced Navbar */}
-      <nav className="fixed top-0 left-0 w-full z-30 bg-white/90 backdrop-blur-xl border-b border-amber-200/50 shadow-lg">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
-              <Flower className="text-white" size={20} />
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-              Ask Rishiji
-            </span>
-          </div>
-          <div className="flex gap-8 text-gray-700 font-medium">
-            <a href="#" className="hover:text-amber-600 transition-colors">
-              Home
-            </a>
-            <a href="#about" className="hover:text-amber-600 transition-colors">
-              About
-            </a>
-            <a
-              href="#wisdom"
-              className="hover:text-amber-600 transition-colors"
-            >
-              Wisdom
-            </a>
-            <a
-              href="#contact"
-              className="hover:text-amber-600 transition-colors"
-            >
-              Contact
-            </a>
-          </div>
-        </div>
-      </nav>
-      <div className="h-20" /> {/* Navbar spacer */}
       {/* Main Content */}
       <div className="relative z-20 flex items-center justify-center min-h-screen px-6">
         <div className="text-center max-w-4xl mx-auto">
@@ -600,5 +581,28 @@ export default function ImprovedAskRishiji() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Loading component for Suspense fallback
+function SearchFallback() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mb-4 mx-auto">
+          <Flower className="text-white animate-pulse" size={32} />
+        </div>
+        <p className="text-gray-600">Loading Ask Rishiji...</p>
+      </div>
+    </div>
+  );
+}
+
+// Main component wrapped with Suspense
+export default function Page() {
+  return (
+    <Suspense fallback={<SearchFallback />}>
+      <ImprovedAskRishiji />
+    </Suspense>
   );
 }
