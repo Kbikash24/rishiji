@@ -227,7 +227,7 @@ export default function BlogsPage() {
                   <div className="text-white/80 text-xs mt-1">By {selectedBlog.author} • {selectedBlog.date}</div>
                 </div>
               </div>
-              <h1 className="text-2xl md:text-3xl font-semibold leading-tight">
+              <h1 className="text-3xl md:text-5xl font-semibold leading-tight">
                 {selectedBlog.title}
               </h1>
             </div>
@@ -424,7 +424,7 @@ export default function BlogsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                Accessing Sacred Wisdom...
+                Loading blog content...
               </motion.div>
               <motion.div 
                 className="text-slate-600 text-sm font-light"
@@ -532,9 +532,9 @@ export default function BlogsPage() {
                           background: accent
                         }}
                       >
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-white/20 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-yellow/20 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
                         
-                        <div className="relative p-5 flex flex-col h-full min-h-[240px]">
+                        <div className="relative p-5 flex flex-col h-full min-h-[240px] ">
                           <div className="flex items-start justify-between mb-3">
                             <div className="flex items-center space-x-2">
                               <motion.div 
@@ -555,7 +555,7 @@ export default function BlogsPage() {
                             </div>
                           </div>
 
-                          <h3 className="text-sm font-medium text-slate-800 mb-3 line-clamp-4 leading-tight group-hover:text-amber-700 transition-colors duration-300">
+                          <h3 className="text-lg md:text-xl font-semibold text-slate-800 mb-3 line-clamp-4 leading-tight group-hover:text-amber-700 transition-colors duration-300">
                             {blog.title}
                           </h3>
 
