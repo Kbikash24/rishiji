@@ -246,7 +246,7 @@ export default function BlogsPage() {
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                   />
                   <span className="text-amber-800 font-medium text-sm">Receiving divine guidance...</span>
-                  <span className="text-gray-500 text-xs mt-1 font-light">Rishiji's wisdom is being channeled</span>
+                  <span className="text-gray-500 text-xs mt-1 font-light">Rishiji&#39;s wisdom is being channeled</span>
                 </motion.div>
               </div>
             )}
@@ -603,7 +603,7 @@ export default function BlogsPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47.881-6.08 2.33l-.926-.626C6.82 14.945 9.294 14 12 14s5.18.945 7.006 2.704l-.926.627A7.975 7.975 0 0012 15"/>
                     </svg>
                     <p className="text-md font-medium text-slate-600">No wisdom found</p>
-                    <p className="text-slate-500 text-sm font-light">Your search didn't match any sacred teachings.</p>
+                    <p className="text-slate-500 text-sm font-light">Your search didn&#39;t match any sacred teachings.</p>
                   </motion.div>
                 </div>
               )
