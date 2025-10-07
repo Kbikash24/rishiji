@@ -12,7 +12,7 @@ import {
   Clock,
 } from "lucide-react";
 import axios from "axios";
-import sanitizeHtml from "sanitize-html";
+import sanitizeAIHtml from "../lib/sanitizeHtml";
 
 // Enhanced Loader Component
 const MotionLoader = () => (
@@ -306,63 +306,65 @@ function ImprovedAskRishiji() {
       {/* Main Content */}
       <div className="relative z-20 flex items-center justify-center min-h-screen px-6">
         <div className="text-center max-w-4xl mx-auto">
-          {/* Enhanced Logo and Title */}
-          <motion.div
-            className="mb-8"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 1, type: "spring", stiffness: 150 }}
-          >
+          {/* Enhanced Logo and Title - hidden when results are shown so only the search stays visible */}
+          {!showResults && (
             <motion.div
-              animate={{ 
-                rotate: [0, 5, 0, -5, 0],
-                y: [0, -5, 0, -5, 0]
-              }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              className="relative mb-6 flex justify-center"
+              className="mb-8"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 1, type: "spring", stiffness: 150 }}
             >
               <motion.div
-                className="w-16 h-16 bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-400 rounded-full flex items-center justify-center shadow-2xl glow overflow-hidden"
-                whileHover={{ scale: 1.1, rotate: 360 }}
-                transition={{ duration: 0.6 }}
+                animate={{ 
+                  rotate: [0, 5, 0, -5, 0],
+                  y: [0, -5, 0, -5, 0]
+                }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                className="relative mb-6 flex justify-center"
               >
-                <Image 
-                  src="/logom.webp" 
-                  alt="Rishiji Logo" 
-                  width={40} 
-                  height={40} 
-                  className="object-cover rounded-full"
+                <motion.div
+                  className="w-16 h-16 bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-400 rounded-full flex items-center justify-center shadow-2xl glow overflow-hidden"
+                  whileHover={{ scale: 1.1, rotate: 360 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <Image 
+                    src="/logom.webp" 
+                    alt="Rishiji Logo" 
+                    width={40} 
+                    height={40} 
+                    className="object-cover rounded-full"
+                  />
+                </motion.div>
+                <motion.div
+                  animate={{ scale: [1, 1.4, 1], opacity: [0.2, 0.4, 0.2] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  className="absolute -inset-6 bg-gradient-to-br from-yellow-400/15 to-orange-400/15 rounded-full blur-xl"
                 />
               </motion.div>
-              <motion.div
-                animate={{ scale: [1, 1.4, 1], opacity: [0.2, 0.4, 0.2] }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="absolute -inset-6 bg-gradient-to-br from-yellow-400/15 to-orange-400/15 rounded-full blur-xl"
-              />
+
+              <motion.h1
+                initial={{ y: 30, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 1, delay: 0.3 }}
+                className="text-4xl md:text-5xl text-gray-800 mb-4 font-light"
+              >
+                Ask{" "}
+                <span className="bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 bg-clip-text text-transparent font-semibold">
+                  Rishiji
+                </span>
+              </motion.h1>
+
+              <motion.p
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 1, delay: 0.5 }}
+                className="text-sm text-gray-600 max-w-2xl mx-auto leading-relaxed font-light"
+              >
+                Get personalized spiritual guidance from Rishiji&apos;s extensive knowledge and
+                experience.
+              </motion.p>
             </motion.div>
-
-            <motion.h1
-              initial={{ y: 30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 1, delay: 0.3 }}
-              className="text-4xl md:text-5xl text-gray-800 mb-4 font-light"
-            >
-              Ask{" "}
-              <span className="bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 bg-clip-text text-transparent font-semibold">
-                Rishiji
-              </span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 1, delay: 0.5 }}
-              className="text-sm text-gray-600 max-w-2xl mx-auto leading-relaxed font-light"
-            >
-              Get personalized spiritual guidance from Rishiji&apos;s extensive knowledge and
-              experience.
-            </motion.p>
-          </motion.div>
+          )}
 
           {/* Enhanced Search Box */}
           <motion.div
@@ -452,33 +454,7 @@ function ImprovedAskRishiji() {
                   animate={{ scale: 1 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <div className="flex items-center gap-3 mb-5">
-                    <motion.div 
-                      className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center"
-                      whileHover={{ rotate: 360 }}
-                      transition={{ duration: 0.6 }}
-                    >
-                      <MessageCircle className="text-white" size={18} />
-                    </motion.div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800">
-                        Answer from Rishiji
-                      </h3>
-                      {response.timestamp && (
-                        <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                          <Clock size={12} />
-                          <span>
-                            {new Date(response.timestamp).toLocaleString()}
-                          </span>
-                          {response.is_cached && (
-                            <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
-                              Cached ({response.cache_age_days} days old)
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                
 
                   {/* HTML Content */}
                   {(() => {
@@ -490,53 +466,7 @@ function ImprovedAskRishiji() {
                         <div
                           className="prose prose-sm max-w-none text-gray-700 font-light"
                           dangerouslySetInnerHTML={{
-                            __html: sanitizeHtml(htmlContent, {
-                              allowedTags:
-                                sanitizeHtml.defaults.allowedTags.concat([
-                                  "img",
-                                  "h1",
-                                  "h2",
-                                  "h3",
-                                  "h4",
-                                  "h5",
-                                  "h6",
-                                  "div",
-                                  "section",
-                                  "style",
-                                  "iframe",
-                                  "blockquote",
-                                ]),
-                              allowedAttributes: {
-                                ...sanitizeHtml.defaults.allowedAttributes,
-                                "*": ["class", "id", "style"],
-                                img: ["src", "alt", "width", "height"],
-                                a: ["href", "target", "rel"],
-                                iframe: [
-                                  "src",
-                                  "width",
-                                  "height",
-                                  "frameborder",
-                                  "allowfullscreen",
-                                ],
-                              },
-                              allowedStyles: {
-                                "*": {
-                                  "font-family": [/.*/],
-                                  "line-height": [/.*/],
-                                  margin: [/.*/],
-                                  background: [/.*/],
-                                  color: [/.*/],
-                                  "font-weight": [/.*/],
-                                  "font-size": [/.*/],
-                                  "max-width": [/.*/],
-                                  padding: [/.*/],
-                                  border: [/.*/],
-                                  "border-radius": [/.*/],
-                                  "box-shadow": [/.*/],
-                                  "text-align": [/.*/],
-                                },
-                              },
-                            }),
+                            __html: sanitizeAIHtml(htmlContent),
                           }}
                         />
                       );
@@ -554,19 +484,7 @@ function ImprovedAskRishiji() {
                     }
                   })()}
 
-                  {/* Response Metadata */}
-                  <div className="mt-5 pt-3 border-t border-gray-200 flex items-center justify-between text-xs text-gray-500">
-                    <div className="flex items-center gap-3">
-                      <span>Access Count: {response.access_count}</span>
-                      <span>Creator: {response.creator_id}</span>
-                    </div>
-                    {suggestions.length > 0 && (
-                      <div className="flex items-center gap-2">
-                        <Sparkles size={14} />
-                        <span>Related suggestions available</span>
-                      </div>
-                    )}
-                  </div>
+                
                 </motion.div>
 
                 {/* Suggestions */}
