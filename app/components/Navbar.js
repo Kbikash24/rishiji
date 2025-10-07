@@ -11,8 +11,7 @@ const Navbar = () => {
     { href: "/", label: "Home" },
     { href: "/blogs", label: "Blogs" },
     { href: "#about", label: "About" },
-    { href: "#wisdom", label: "Wisdom" },
-    { href: "#contact", label: "Contact" }
+   
   ];
 
   return (
@@ -20,7 +19,7 @@ const Navbar = () => {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      className="fixed top-0 left-0 w-full z-30 glass bg-white/85 backdrop-blur-xl border-b border-yellow-200/40 shadow-lg shadow-yellow-500/10"
+  className="fixed top-0 left-0 w-full z-30 glass bg-white backdrop-blur-xl border-b border-yellow-200/40 shadow-lg shadow-yellow-500/10"
     >
       <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
@@ -31,10 +30,10 @@ const Navbar = () => {
             className="w-8 h-8 bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-400 rounded-full flex items-center justify-center shadow-lg glow overflow-hidden"
           >
             <Image 
-              src="/logom.webp" 
+              src="/flower2.png" 
               alt="Rishiji Logo" 
-              width={24} 
-              height={24} 
+              width={44} 
+              height={44} 
               className="object-cover rounded-full"
             />
           </motion.div>
@@ -81,7 +80,7 @@ const Navbar = () => {
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             onClick={() => setOpen((s) => !s)}
-            className="relative z-40 w-10 h-10 rounded-md flex items-center justify-center bg-white/60 backdrop-blur-md border border-yellow-100/40 shadow-sm"
+            className="relative z-40 w-10 h-10 rounded-md flex items-center justify-center bg-white backdrop-blur-md border border-yellow-100/40 shadow-sm"
           >
             <span className="sr-only">Menu</span>
             {/* Hamburger bars animated into X using framer-motion variants */}
@@ -124,7 +123,7 @@ const Navbar = () => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.25 }}
-          className="md:hidden bg-white/90 backdrop-blur-lg border-b border-yellow-100/40 shadow-md"
+          className="md:hidden bg-white backdrop-blur-lg border-b border-yellow-100/40 shadow-md"
         >
           <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col gap-2">
             {links.map((link) => (

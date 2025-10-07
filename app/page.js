@@ -323,15 +323,15 @@ function ImprovedAskRishiji() {
                 className="relative mb-6 flex justify-center"
               >
                 <motion.div
-                  className="w-16 h-16 bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-400 rounded-full flex items-center justify-center shadow-2xl glow overflow-hidden"
+                  className="w-16 h-16 rounded-full flex items-center justify-center shadow-2xl glow overflow-hidden"
                   whileHover={{ scale: 1.1, rotate: 360 }}
                   transition={{ duration: 0.6 }}
                 >
                   <Image 
-                    src="/logom.webp" 
+                    src="/flower2.png" 
                     alt="Rishiji Logo" 
-                    width={40} 
-                    height={40} 
+                    width={60} 
+                    height={60} 
                     className="object-cover rounded-full"
                   />
                 </motion.div>
@@ -375,7 +375,7 @@ function ImprovedAskRishiji() {
           >
             <div className="relative max-w-3xl mx-auto">
               <motion.div
-                className="flex items-center glass bg-white/90 backdrop-blur-xl border border-yellow-200/50 rounded-2xl shadow-2xl shadow-yellow-500/10 overflow-hidden hover:shadow-yellow-500/20 transition-all duration-300"
+                className="flex items-center glass bg-white backdrop-blur-xl border border-yellow-200/50 rounded-2xl shadow-2xl shadow-yellow-500/10 overflow-hidden hover:shadow-yellow-500/20 transition-all duration-300"
                 whileHover={{ scale: 1.02, y: -2 }}
                 transition={{ duration: 0.2 }}
               >
@@ -419,7 +419,7 @@ function ImprovedAskRishiji() {
                         setSearchQuery(question);
                         handleAsk(question);
                       }}
-                      className="px-4 py-2 glass bg-white/70 border border-yellow-200/50 rounded-full text-xs text-gray-700 hover:bg-white/90 hover:border-yellow-300/70 transition-all duration-300 font-light glow"
+                      className="px-4 py-2 glass bg-white border border-yellow-200/50 rounded-full text-xs text-gray-700 hover:bg-white hover:border-yellow-300/70 transition-all duration-300 font-light glow"
                       whileHover={{ scale: 1.05, y: -2 }}
                       whileTap={{ scale: 0.95 }}
                       initial={{ opacity: 0, y: 10 }}
@@ -449,7 +449,7 @@ function ImprovedAskRishiji() {
               >
                 {/* Response Card */}
                 <motion.div 
-                  className="glass bg-white/85 backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-yellow-200/30 mb-6 glow"
+                  className="glass bg-white backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-yellow-200/30 mb-6 glow"
                   initial={{ scale: 0.95 }}
                   animate={{ scale: 1 }}
                   transition={{ duration: 0.3 }}
@@ -493,7 +493,7 @@ function ImprovedAskRishiji() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="glass bg-white/75 backdrop-blur-sm rounded-2xl p-5 shadow-xl border border-yellow-200/40"
+                    className="glass bg-white backdrop-blur-sm rounded-2xl p-5 shadow-xl border border-yellow-200/40"
                   >
                     <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
                       <Sparkles className="text-amber-500" size={16} />
