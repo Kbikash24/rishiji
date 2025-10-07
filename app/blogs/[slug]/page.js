@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import sanitizeAIHtml from '@/lib/sanitizeHtml';
@@ -72,7 +73,7 @@ export default function BlogPage() {
 
   if (!loading && error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 w-full">
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 w-full">
         {/* Enhanced Error Page */}
         <div className="max-w-2xl mx-auto px-4 py-24 text-center">
           <div className="bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-200/50 rounded-3xl p-12 shadow-xl">
@@ -107,15 +108,15 @@ export default function BlogPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 w-full">
+    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 w-full">
       <div className="max-w-6xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-        <article className="bg-white rounded-lg sm:rounded-xl lg:rounded-2xl shadow-lg sm:shadow-xl overflow-hidden border border-amber-200 sm:border-2 px-8">
+        <article className="glass bg-white/90 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-lg sm:shadow-xl overflow-hidden border border-yellow-200/30 sm:border-2 px-6 sm:px-8">
           {loading ? (
             <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
               <div className="flex flex-col items-center justify-center text-center">
-                <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 border-b-2 border-amber-600 mb-3 sm:mb-4"></div>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 border-2 border-yellow-200 border-t-yellow-500 rounded-full mb-3 sm:mb-4 animate-spin"></div>
                 <span className="text-amber-800 font-medium text-sm sm:text-base">Loading sacred wisdom...</span>
-                <span className="text-slate-500 text-xs sm:text-sm mt-1 sm:mt-2 px-2">Divine guidance is being channeled for your spiritual journey</span>
+                <span className="text-slate-500 text-xs sm:text-sm mt-1 sm:mt-2 px-2 font-light">Divine guidance is being channeled for your spiritual journey</span>
               </div>
             </div>
           ) : error ? (

@@ -2,6 +2,7 @@
 import { useCallback, useRef, useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import {
   Search,
   Flower,
@@ -19,13 +20,13 @@ const MotionLoader = () => (
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
-    className="flex flex-col items-center justify-center py-16 px-4"
+    className="flex flex-col items-center justify-center py-12 px-4"
   >
-    <div className="relative w-20 h-20 mb-6">
+    <div className="relative w-16 h-16 mb-4">
       {[...Array(3)].map((_, i) => (
         <motion.div
           key={i}
-          className="absolute inset-0 border-4 border-amber-300 rounded-full"
+          className="absolute inset-0 border-3 border-yellow-300 rounded-full"
           animate={{
             scale: [1, 2, 2, 1, 1],
             rotate: [0, 0, 180, 180, 0],
@@ -41,11 +42,11 @@ const MotionLoader = () => (
         />
       ))}
       <motion.div
-        className="absolute inset-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center"
+        className="absolute inset-2 bg-gradient-to-r from-yellow-500 to-amber-500 rounded-full flex items-center justify-center glow"
         animate={{ rotate: 360 }}
         transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
       >
-        <Flower className="text-white" size={24} />
+        <Flower className="text-white" size={20} />
       </motion.div>
     </div>
     <motion.div
@@ -54,10 +55,10 @@ const MotionLoader = () => (
       transition={{ delay: 0.5 }}
       className="text-center"
     >
-      <h3 className="text-xl font-semibold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent mb-2">
+      <h3 className="text-lg font-medium bg-gradient-to-r from-yellow-600 to-amber-600 bg-clip-text text-transparent mb-2">
         Seeking wisdom from Rishiji...
       </h3>
-      <p className="text-slate-500">
+      <p className="text-slate-500 text-sm font-light">
         Please wait while I find the perfect guidance for you.
       </p>
     </motion.div>
@@ -267,7 +268,7 @@ function ImprovedAskRishiji() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 relative overflow-hidden">
       {/* Enhanced Background */}
       <FlowerBG className="fixed inset-0 w-full h-full z-0" />
   {/* Additional FlowerBG for layered effect at left corner */}
@@ -277,19 +278,29 @@ function ImprovedAskRishiji() {
       <div className="absolute inset-0 overflow-hidden z-10">
         <motion.div
           animate={{
-            scale: [1, 1.3, 1],
-            opacity: [0.1, 0.2, 0.1],
+            scale: [1, 1.2, 1],
+            opacity: [0.05, 0.1, 0.05],
           }}
           transition={{ duration: 8, repeat: Infinity }}
-          className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-orange-300 to-amber-300 rounded-full blur-3xl"
+          className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-yellow-200 to-amber-200 rounded-full blur-3xl animate-float"
         />
         <motion.div
           animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.1, 0.25, 0.1],
+            scale: [1.1, 1, 1.1],
+            opacity: [0.08, 0.15, 0.08],
           }}
           transition={{ duration: 10, repeat: Infinity }}
-          className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-yellow-300 to-orange-300 rounded-full blur-3xl"
+          className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-amber-200 to-orange-200 rounded-full blur-3xl animate-float"
+          style={{ animationDelay: '2s' }}
+        />
+        <motion.div
+          animate={{
+            scale: [1, 1.4, 1],
+            opacity: [0.03, 0.08, 0.03],
+          }}
+          transition={{ duration: 12, repeat: Infinity }}
+          className="absolute top-1/2 left-1/3 w-64 h-64 bg-gradient-to-br from-yellow-300 to-amber-300 rounded-full blur-3xl animate-float"
+          style={{ animationDelay: '4s' }}
         />
       </div>
       {/* Main Content */}
@@ -297,23 +308,36 @@ function ImprovedAskRishiji() {
         <div className="text-center max-w-4xl mx-auto">
           {/* Enhanced Logo and Title */}
           <motion.div
-            className="mb-12"
+            className="mb-8"
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 1, type: "spring", stiffness: 150 }}
           >
             <motion.div
-              animate={{ rotate: [0, 5, 0, -5, 0] }}
+              animate={{ 
+                rotate: [0, 5, 0, -5, 0],
+                y: [0, -5, 0, -5, 0]
+              }}
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              className="relative mb-8 flex justify-center"
+              className="relative mb-6 flex justify-center"
             >
-              <div className="w-20 h-20 bg-gradient-to-br from-amber-400 via-orange-400 to-red-400 rounded-full flex items-center justify-center shadow-2xl">
-                <Flower className="text-white" size={40} />
-              </div>
               <motion.div
-                animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
+                className="w-16 h-16 bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-400 rounded-full flex items-center justify-center shadow-2xl glow overflow-hidden"
+                whileHover={{ scale: 1.1, rotate: 360 }}
+                transition={{ duration: 0.6 }}
+              >
+                <Image 
+                  src="/logom.webp" 
+                  alt="Rishiji Logo" 
+                  width={40} 
+                  height={40} 
+                  className="object-cover rounded-full"
+                />
+              </motion.div>
+              <motion.div
+                animate={{ scale: [1, 1.4, 1], opacity: [0.2, 0.4, 0.2] }}
                 transition={{ duration: 3, repeat: Infinity }}
-                className="absolute -inset-6 bg-gradient-to-br from-amber-400/20 to-orange-400/20 rounded-full blur-xl"
+                className="absolute -inset-6 bg-gradient-to-br from-yellow-400/15 to-orange-400/15 rounded-full blur-xl"
               />
             </motion.div>
 
@@ -321,10 +345,10 @@ function ImprovedAskRishiji() {
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 1, delay: 0.3 }}
-              className="text-6xl md:text-7xl text-gray-800 mb-6"
+              className="text-4xl md:text-5xl text-gray-800 mb-4 font-light"
             >
               Ask{" "}
-              <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent font-semibold">
+              <span className="bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 bg-clip-text text-transparent font-semibold">
                 Rishiji
               </span>
             </motion.h1>
@@ -333,7 +357,7 @@ function ImprovedAskRishiji() {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 1, delay: 0.5 }}
-              className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed"
+              className="text-sm text-gray-600 max-w-2xl mx-auto leading-relaxed font-light"
             >
               Get personalized spiritual guidance from Rishiji&apos;s extensive knowledge and
               experience.
@@ -345,12 +369,16 @@ function ImprovedAskRishiji() {
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 1, delay: 0.7 }}
-            className="mb-8"
+            className="mb-6"
           >
-            <div className="relative max-w-4xl mx-auto">
-              <div className="flex items-center bg-white/95 backdrop-blur-xl border-2 border-amber-200/60 rounded-2xl shadow-2xl shadow-amber-500/20 overflow-hidden hover:shadow-3xl transition-all duration-300">
-                <div className="pl-8 pr-4">
-                  <Search className="text-amber-500" size={28} />
+            <div className="relative max-w-3xl mx-auto">
+              <motion.div
+                className="flex items-center glass bg-white/90 backdrop-blur-xl border border-yellow-200/50 rounded-2xl shadow-2xl shadow-yellow-500/10 overflow-hidden hover:shadow-yellow-500/20 transition-all duration-300"
+                whileHover={{ scale: 1.02, y: -2 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="pl-6 pr-3">
+                  <Search className="text-amber-500" size={20} />
                 </div>
                 <input
                   type="text"
@@ -358,16 +386,18 @@ function ImprovedAskRishiji() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Ask your question about spiritual guidance..."
-                  className="flex-1 min-w-0 py-6 pr-8 bg-transparent text-gray-800 placeholder-gray-500 focus:outline-none text-lg"
+                  className="flex-1 min-w-0 py-4 pr-6 bg-transparent text-gray-800 placeholder-gray-500 focus:outline-none text-sm font-light"
                 />
-                <button
+                <motion.button
                   onClick={handleSearchSubmit}
                   disabled={loading || !searchQuery.trim()}
-                  className="mr-4 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-semibold hover:from-amber-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+                  className="mr-3 px-5 py-2 bg-gradient-to-r from-yellow-500 to-amber-500 text-white rounded-xl font-medium text-sm hover:from-yellow-600 hover:to-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 glow"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   {loading ? "Asking..." : "Ask"}
-                </button>
-              </div>
+                </motion.button>
+              </motion.div>
             </div>
 
             {/* Quick Questions */}
@@ -376,21 +406,26 @@ function ImprovedAskRishiji() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.9 }}
-                className="mt-8"
+                className="mt-6"
               >
-                <p className="text-gray-600 mb-4 text-lg">Try asking about:</p>
-                <div className="flex flex-wrap gap-3 justify-center max-w-4xl mx-auto">
+                <p className="text-gray-600 mb-3 text-sm font-light">Try asking about:</p>
+                <div className="flex flex-wrap gap-2 justify-center max-w-3xl mx-auto">
                   {quickQuestions.map((question, i) => (
-                    <button
+                    <motion.button
                       key={i}
                       onClick={() => {
                         setSearchQuery(question);
                         handleAsk(question);
                       }}
-                      className="px-5 py-3 bg-white/80 border border-amber-200 rounded-full text-sm text-gray-700 hover:shadow-lg hover:bg-white hover:border-amber-300 transition-all duration-300 hover:-translate-y-0.5 cursor-pointer"
+                      className="px-4 py-2 glass bg-white/70 border border-yellow-200/50 rounded-full text-xs text-gray-700 hover:bg-white/90 hover:border-yellow-300/70 transition-all duration-300 font-light glow"
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 1 + i * 0.1 }}
                     >
                       {question}
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
               </motion.div>
@@ -411,18 +446,27 @@ function ImprovedAskRishiji() {
                 className="max-w-5xl mx-auto"
               >
                 {/* Response Card */}
-                <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-amber-200/50 mb-8">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                      <MessageCircle className="text-white" size={24} />
-                    </div>
+                <motion.div 
+                  className="glass bg-white/85 backdrop-blur-sm rounded-3xl p-6 shadow-2xl border border-yellow-200/30 mb-6 glow"
+                  initial={{ scale: 0.95 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="flex items-center gap-3 mb-5">
+                    <motion.div 
+                      className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center"
+                      whileHover={{ rotate: 360 }}
+                      transition={{ duration: 0.6 }}
+                    >
+                      <MessageCircle className="text-white" size={18} />
+                    </motion.div>
                     <div>
-                      <h3 className="text-2xl font-bold text-gray-800">
+                      <h3 className="text-lg font-semibold text-gray-800">
                         Answer from Rishiji
                       </h3>
                       {response.timestamp && (
-                        <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                          <Clock size={14} />
+                        <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                          <Clock size={12} />
                           <span>
                             {new Date(response.timestamp).toLocaleString()}
                           </span>
@@ -444,7 +488,7 @@ function ImprovedAskRishiji() {
                     if (htmlContent) {
                       return (
                         <div
-                          className="prose prose-lg max-w-none text-gray-700"
+                          className="prose prose-sm max-w-none text-gray-700 font-light"
                           dangerouslySetInnerHTML={{
                             __html: sanitizeHtml(htmlContent, {
                               allowedTags:
@@ -498,7 +542,7 @@ function ImprovedAskRishiji() {
                       );
                     } else {
                       return (
-                        <div className="prose prose-lg max-w-none text-gray-700">
+                        <div className="prose prose-sm max-w-none text-gray-700 font-light">
                           <TypingText
                             text={
                               response.result.replace(/\[EMOJI\]/g, "🙏") ||
@@ -511,19 +555,19 @@ function ImprovedAskRishiji() {
                   })()}
 
                   {/* Response Metadata */}
-                  <div className="mt-6 pt-4 border-t border-gray-200 flex items-center justify-between text-sm text-gray-500">
-                    <div className="flex items-center gap-4">
+                  <div className="mt-5 pt-3 border-t border-gray-200 flex items-center justify-between text-xs text-gray-500">
+                    <div className="flex items-center gap-3">
                       <span>Access Count: {response.access_count}</span>
                       <span>Creator: {response.creator_id}</span>
                     </div>
                     {suggestions.length > 0 && (
                       <div className="flex items-center gap-2">
-                        <Sparkles size={16} />
+                        <Sparkles size={14} />
                         <span>Related suggestions available</span>
                       </div>
                     )}
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Suggestions */}
                 {suggestions.length > 0 && (
@@ -531,24 +575,29 @@ function ImprovedAskRishiji() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-amber-200/50"
+                    className="glass bg-white/75 backdrop-blur-sm rounded-2xl p-5 shadow-xl border border-yellow-200/40"
                   >
-                    <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                      <Sparkles className="text-amber-500" size={20} />
+                    <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
+                      <Sparkles className="text-amber-500" size={16} />
                       You might also be interested in:
                     </h4>
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-2">
                       {suggestions.map((suggestion, index) => (
-                        <button
+                        <motion.button
                           key={index}
                           onClick={() => {
                             setSearchQuery(suggestion);
                             handleAsk(suggestion);
                           }}
-                          className="px-4 py-2 bg-amber-50 border border-amber-200 rounded-full text-sm text-amber-800 hover:bg-amber-100 hover:border-amber-300 transition-all duration-300 cursor-pointer"
+                          className="px-3 py-2 bg-yellow-50/80 border border-yellow-200/50 rounded-full text-xs text-amber-800 hover:bg-yellow-100/80 hover:border-yellow-300/70 transition-all duration-300 font-light"
+                          whileHover={{ scale: 1.05, y: -1 }}
+                          whileTap={{ scale: 0.95 }}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.4 + index * 0.05 }}
                         >
                           {suggestion}
-                        </button>
+                        </motion.button>
                       ))}
                     </div>
                   </motion.div>
@@ -564,18 +613,24 @@ function ImprovedAskRishiji() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="max-w-2xl mx-auto mt-8 p-6 bg-red-50 border-2 border-red-200 rounded-2xl text-red-700 text-center"
+              className="max-w-xl mx-auto mt-6 p-5 glass bg-red-50/90 border border-red-200/50 rounded-2xl text-red-700 text-center shadow-lg"
             >
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MessageCircle className="text-red-500" size={24} />
-              </div>
-              <p className="text-lg mb-4">{error}</p>
-              <button
+              <motion.div 
+                className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3"
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.6 }}
+              >
+                <MessageCircle className="text-red-500" size={18} />
+              </motion.div>
+              <p className="text-sm mb-3 font-light">{error}</p>
+              <motion.button
                 onClick={() => setError(null)}
-                className="px-6 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl font-medium transition-colors"
+                className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl font-medium text-sm transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 Dismiss
-              </button>
+              </motion.button>
             </motion.div>
           )}
         </div>
@@ -587,13 +642,22 @@ function ImprovedAskRishiji() {
 // Loading component for Suspense fallback
 function SearchFallback() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mb-4 mx-auto">
-          <Flower className="text-white animate-pulse" size={32} />
-        </div>
-        <p className="text-gray-600">Loading Ask Rishiji...</p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 flex items-center justify-center">
+      <motion.div 
+        className="text-center"
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6 }}
+      >
+        <motion.div 
+          className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full flex items-center justify-center mb-3 mx-auto glow"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+        >
+          <Flower className="text-white" size={20} />
+        </motion.div>
+        <p className="text-gray-600 text-sm font-light">Loading Ask Rishiji...</p>
+      </motion.div>
     </div>
   );
 }
